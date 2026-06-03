@@ -11,33 +11,33 @@ export const HowToPlayScreen: React.FC<HowToPlayScreenProps> = ({ onBack }) => {
   const steps = [
     {
       title: 'Goal',
-      description: 'The objective is to move all 4 of your tokens from the base to the center finishing zone.',
+      description: 'Be the first to move all 4 of your tokens from the home yard to the center finishing square.',
       icon: <Trophy className="text-gold-400" size={40} />
     },
     {
-      title: 'Starting',
-      description: 'You must roll a 6 to move a token out of your home base and onto the starting cell.',
+      title: 'Getting Started',
+      description: 'You must roll a 6 to move a token from your yard onto the starting square.',
       icon: <Dices className="text-blue-400" size={40} />
     },
     {
-      title: 'Movement',
-      description: 'Move your tokens clockwise around the track based on your dice roll. Rolling a 6 gives you an extra turn!',
-      icon: <ArrowRight className="text-emerald-400" size={40} />
+      title: 'Bonus Turns',
+      description: 'Rolling a 6 earns you a bonus turn. However, rolling three 6s in a row forfeits your turn!',
+      icon: <Sparkles className="text-emerald-400" size={40} />
     },
     {
       title: 'Capturing',
-      description: 'Land on an opponent\'s token to send it back to their base. You get a bonus roll for capturing!',
+      description: 'Land on an opponent\'s token to send it back to their yard. Capturing grants you an extra turn!',
       icon: <Swords className="text-ruby-400" size={40} />
     },
     {
-      title: 'Safe Zones',
-      description: 'Cells with a special star mark are safe zones. Tokens on these cells cannot be captured.',
+      title: 'Safe Spaces & Blocks',
+      description: 'Star-marked cells are safe. Two tokens of the same color form a blockade that no one can pass or land on.',
       icon: <Shield className="text-gold-500" size={40} />
     },
     {
       title: 'Winning',
-      description: 'Navigate the home run track to reach the center. The first player to finish all tokens wins!',
-      icon: <Sparkles className="text-purple-400" size={40} />
+      description: 'You must roll the exact number needed to reach the home square. First to all 4 tokens wins!',
+      icon: <Star className="text-purple-400" size={40} />
     }
   ];
 

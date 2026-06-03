@@ -193,7 +193,40 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         };
       });
 
-      // ... existing capture logic ...
+      // 2. Capture logic
+      if (targetPosition.type === 'board') {
+        const isSafe = SAFE_CELLS.includes(targetPosition.cellIndex);
+        if (!isSafe) {
+          nextPlayers = nextPlayers.map(p => {
+            if (p.color === activePlayer.color) return p;
+            const capturedToken = p.tokens.find(t => 
+              t.position.type === 'board' && 
+              t.position.cellIndex === targetPosition.cellIndex
+            );
+            if (capturedToken) {
+              hasCaptured = true;
+              // Return captured token to base
+              return {
+                ...p,
+                tokens: p.tokens.map(t => t.id === capturedToken.id ? { 
+                  ...t, 
+                  position: { type: 'base' }, 
+                  stepCount: 0, 
+                  isHome: true 
+                } : t)
+              };
+            }
+            return p;
+          });
+        }
+      }
+
+      if (hasCaptured) {
+        nextPlayers = nextPlayers.map(p => {
+          if (p.color !== activePlayer.color) return p;
+          return { ...p, stats: { ...p.stats, tokensCapured: p.stats.tokensCapured + 1 } };
+        });
+      }
       
       const moveAnim: import('./types').AnimationState = {
         type: 'move',
