@@ -59,4 +59,4 @@ npm run build
 Distributed under the MIT License. See `LICENSE` for more information.
 
 ---
-Made with 👑 by Farman Ullah
+Made with 👑 by Farmanullah Ansari

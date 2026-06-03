@@ -150,7 +150,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onPlay, onSettings, onHo
 
       <div className="absolute bottom-4 flex flex-col items-center gap-2 z-10">
         <div className="text-gray-400 text-sm font-crimson italic flex items-center gap-1">
-          v1.2.0 • Crafted with <Crown size={14} className="text-gold-500 fill-gold-500" /> by Farman Ullah
+          v1.2.0 • Crafted with <Crown size={14} className="text-gold-500 fill-gold-500" /> by Farmanullah Ansari
         </div>
         <div className="flex gap-4 text-gray-500">
           <a href="mailto:farmanullahansari999@gmail.com" title="Email" className="hover:text-gold-400 transition-colors" target="_blank" rel="noreferrer">
