@@ -138,7 +138,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 
       if (movableIds.length === 0) {
         nextState = addEvent(nextState, 'skip', `No valid moves.`);
-        return nextState; // Let an effect handle END_TURN or we could inline it
+        nextState.phase = 'selecting-token';
+        return nextState; // Let an effect handle END_TURN
       } else if (movableIds.length === 1 && !state.settings.showMovableHints) {
         // Auto select if only one valid move and hints are off
         nextState.selectedTokenId = movableIds[0] || null;

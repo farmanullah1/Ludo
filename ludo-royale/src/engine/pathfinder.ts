@@ -17,18 +17,18 @@ export const getTokenPath = (token: Token, steps: number, boardCells: BoardCell[
 
   for (let i = 0; i < steps; i++) {
     currentStepCount++;
-    if (currentStepCount <= 50) {
+    if (currentStepCount <= 51) {
       // Outer track
       if (currentPos.type === 'board') {
         currentPos = { type: 'board', cellIndex: (currentPos.cellIndex + 1) % 52 };
       } else {
         return []; // Invalid
       }
-    } else if (currentStepCount <= 56) {
-      // Home run
-      const hrStep = currentStepCount - 50;
+    } else if (currentStepCount <= 57) {
+      // Home run (6 steps: 52 to 57)
+      const hrStep = currentStepCount - 51;
       currentPos = { type: 'homeRun', step: hrStep };
-    } else if (currentStepCount === 57) {
+    } else if (currentStepCount === 58) {
       currentPos = { type: 'finished' };
     } else {
       // Overshoot

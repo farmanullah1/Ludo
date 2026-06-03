@@ -96,6 +96,16 @@ export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit, restor
     }
   }, [gameState.phase, activePlayer, handleRoll, isRolling, gameState.dice.values, gameState.movableTokenIds, gameState.players.length]);
 
+  // Human turn auto-advance when no moves are available
+  useEffect(() => {
+    if (gameState.phase === 'selecting-token' && activePlayer && activePlayer.type === 'human' && gameState.movableTokenIds.length === 0) {
+      const timer = setTimeout(() => {
+        dispatch({ type: 'END_TURN' });
+      }, 2000); // 2 second delay so player has time to see "No valid moves available."
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.phase, activePlayer, gameState.movableTokenIds.length]);
+
   if (gameState.players.length === 0 || !activePlayer) return (
     <div className="w-screen h-screen bg-obsidian-950 flex items-center justify-center">
       <div className="text-gold-400 font-cinzel text-2xl animate-pulse">Initializing Royale...</div>
