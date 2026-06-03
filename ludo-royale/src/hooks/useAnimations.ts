@@ -56,7 +56,7 @@ export const useAnimations = (
       // Check for completed animations
       gameState.animations.forEach(anim => {
         if (anim.type === 'move' && anim.tokenId) {
-           const elapsed = timestamp - anim.startTime;
+           const elapsed = Date.now() - anim.startTime;
            if (elapsed >= anim.duration) {
              dispatch({ type: 'ANIMATION_COMPLETE', payload: { animationId: anim.tokenId } });
            }

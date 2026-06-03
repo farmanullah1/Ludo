@@ -94,7 +94,15 @@ export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit, restor
     if (gameState.phase === 'idle' && gameState.players.length > 0) {
       dispatch({ type: 'END_TURN' });
     }
-  }, [gameState.phase, activePlayer, handleRoll, isRolling, gameState.dice.values, gameState.movableTokenIds, gameState.players.length]);
+  }, [
+    gameState.phase, 
+    gameState.activePlayerIndex, 
+    activePlayer?.type, 
+    activePlayer?.id, 
+    handleRoll, 
+    isRolling, 
+    gameState.dice.values
+  ]);
 
   // Human turn auto-advance when no moves are available
   useEffect(() => {
@@ -104,7 +112,17 @@ export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit, restor
       }, 2000); // 2 second delay so player has time to see "No valid moves available."
       return () => clearTimeout(timer);
     }
-  }, [gameState.phase, activePlayer, gameState.movableTokenIds.length]);
+  }, [gameState.phase, gameState.activePlayerIndex, activePlayer?.type, gameState.movableTokenIds.length]);
+
+  // Bonus roll auto-transition
+  useEffect(() => {
+    if (gameState.phase === 'bonus-roll') {
+      const timer = setTimeout(() => {
+        dispatch({ type: 'BONUS_ROLL' });
+      }, 1500); // 1.5 second delay so player has time to see "Bonus Roll!" message
+      return () => clearTimeout(timer);
+    }
+  }, [gameState.phase]);
 
   if (gameState.players.length === 0 || !activePlayer) return (
     <div className="w-screen h-screen bg-obsidian-950 flex items-center justify-center">

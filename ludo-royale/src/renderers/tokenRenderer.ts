@@ -113,7 +113,7 @@ export const renderTokens = (
         // Use either anim.progress if provided or calculate based on time
         let p = anim.progress;
         if (anim.startTime) {
-           p = (timestamp - anim.startTime) / anim.duration;
+           p = (Date.now() - anim.startTime) / anim.duration;
            if (p > 1) p = 1;
         }
         
