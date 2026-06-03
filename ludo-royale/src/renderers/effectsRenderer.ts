@@ -30,10 +30,16 @@ export const renderMovePath = (
 ): void => {
   if (!token || path.length < 2) return;
 
+  const start = path[0];
+  if (!start) return;
+
   ctx.beginPath();
-  ctx.moveTo(path[0].x, path[0].y);
+  ctx.moveTo(start.x, start.y);
   for (let i = 1; i < path.length; i++) {
-    ctx.lineTo(path[i].x, path[i].y);
+    const pt = path[i];
+    if (pt) {
+      ctx.lineTo(pt.x, pt.y);
+    }
   }
 
   ctx.strokeStyle = TOKEN_COLORS[token.color].fill;
@@ -44,6 +50,7 @@ export const renderMovePath = (
   
   // Destination ghost
   const dest = path[path.length - 1];
+  if (!dest) return;
   ctx.globalAlpha = 0.5;
   ctx.beginPath();
   ctx.arc(dest.x, dest.y, CELL_SIZE * 0.38, 0, Math.PI * 2);

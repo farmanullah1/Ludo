@@ -1,4 +1,4 @@
-import { GameState, GameSettings, Player, Token, TokenPosition, GameEvent, GamePhase, DiceState } from './types';
+import { GameState, GameSettings, Player, Token, TokenPosition, GameEvent, GamePhase, DiceState, PlayerColor } from './types';
 import { getMovableTokens, getTokenPath, getPixelPosition } from './pathfinder';
 import { SAFE_CELLS, TURN_ORDER, ANIM_DURATION } from './constants';
 
@@ -15,19 +15,21 @@ export type GameAction =
   | { type: 'BONUS_ROLL' }
   | { type: 'TIMER_EXPIRED' }
   | { type: 'AI_MOVE' }
+  | { type: 'RESTORE_GAME'; payload: GameState }
   | { type: 'RESET_GAME' }
   | { type: 'UNDO_MOVE' }
   | { type: 'PAUSE_GAME' }
   | { type: 'RESUME_GAME' };
 
-const addEvent = (state: GameState, type: GameEvent['type'], description: string, playerColor = state.players[state.activePlayerIndex]?.color): GameState => {
+const addEvent = (state: GameState, type: GameEvent['type'], description: string, playerColor?: PlayerColor): GameState => {
+  const color = playerColor || state.players[state.activePlayerIndex]?.color || 'red';
   return {
     ...state,
     eventLog: [
       {
         id: Math.random().toString(36).substr(2, 9),
         turn: state.turnNumber,
-        playerColor,
+        playerColor: color,
         type,
         description,
         timestamp: Date.now()
@@ -113,9 +115,9 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       const val = action.payload.value;
       const rollCount = state.dice.rollCount + 1;
       
-      let nextState = {
+      let nextState: GameState = {
         ...state,
-        dice: { ...state.dice, values: [val] as [number], rolling: false, rollCount, canRoll: false }
+        dice: { ...state.dice, values: [val] as [number, number] | [number], rolling: false, rollCount, canRoll: false }
       };
 
       nextState = addEvent(nextState, 'roll', `Rolled a ${val}`);
@@ -127,6 +129,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       }
 
       const activePlayer = nextState.players[nextState.activePlayerIndex];
+      if (!activePlayer) return state;
+
       const allTokens = nextState.players.flatMap(p => p.tokens);
       const movableIds = getMovableTokens(activePlayer, val, allTokens);
 
@@ -137,7 +141,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         return nextState; // Let an effect handle END_TURN or we could inline it
       } else if (movableIds.length === 1 && !state.settings.showMovableHints) {
         // Auto select if only one valid move and hints are off
-        nextState.selectedTokenId = movableIds[0];
+        nextState.selectedTokenId = movableIds[0] || null;
         nextState.phase = 'moving-token';
       } else {
         nextState.phase = 'selecting-token';
@@ -157,8 +161,10 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 
     case 'MOVE_TOKEN': {
       const { tokenId, targetPosition } = action.payload;
-      const diceVal = state.dice.values[0];
       const activePlayer = state.players[state.activePlayerIndex];
+      if (!activePlayer) return state;
+
+      const diceVal = state.dice.values[0] || 1;
       let hasCaptured = false;
       let hasFinished = false;
 
@@ -210,7 +216,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
                 ...p,
                 tokens: p.tokens.map(t => t.id === capturedToken.id ? { 
                   ...t, 
-                  position: { type: 'base' }, 
+                  position: { type: 'base' } as TokenPosition, 
                   stepCount: 0, 
                   isHome: true 
                 } : t)
@@ -237,7 +243,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         startTime: Date.now()
       };
 
-      let nextState = {
+      let nextState: GameState = {
         ...state,
         players: nextPlayers,
         animations: [...state.animations, moveAnim],
@@ -250,17 +256,19 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 
       // 3. Determine next phase
       const rolledSix = diceVal === 6;
-      if ((rolledSix || hasCaptured || hasFinished) && !nextState.players[state.activePlayerIndex].tokens.every(t => t.isFinished)) {
-        nextState.phase = 'bonus-roll';
-      } else {
-        nextState.phase = 'idle'; // Will trigger END_TURN
-      }
-
-      // Check if won
-      const finishedCount = nextPlayers[state.activePlayerIndex].tokens.filter(t => t.isFinished).length;
-      if (finishedCount === 4) {
-        nextState.phase = 'game-over';
-        nextState.winner = nextState.players[state.activePlayerIndex];
+      const currPlayerAfterMove = nextState.players[state.activePlayerIndex];
+      if (currPlayerAfterMove) {
+        if ((rolledSix || hasCaptured || hasFinished) && !currPlayerAfterMove.tokens.every(t => t.isFinished)) {
+          nextState.phase = 'bonus-roll';
+        } else {
+          nextState.phase = 'idle'; // Will trigger END_TURN
+        }
+        
+        const finishedCount = currPlayerAfterMove.tokens.filter(t => t.isFinished).length;
+        if (finishedCount === 4) {
+          nextState.phase = 'game-over';
+          nextState.winner = currPlayerAfterMove;
+        }
       }
 
       return nextState;
@@ -275,7 +283,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
           if (t.id === capturedTokenId) {
             return {
               ...t,
-              position: { type: 'base' },
+              position: { type: 'base' } as TokenPosition,
               stepCount: 0,
               isHome: true
             };
@@ -294,8 +302,9 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       // Mark token finished
       let nextState = { ...state };
       let won = false;
+      const activePlayerId = state.players[state.activePlayerIndex]?.id;
       const tokensUpdated = nextState.players.map(p => {
-        if (p.id === state.players[state.activePlayerIndex].id) {
+        if (p.id === activePlayerId) {
           const newTokens = p.tokens.map(t => t.id === action.payload.tokenId ? { ...t, isFinished: true, position: { type: 'finished' } as TokenPosition } : t);
           const finishedCount = newTokens.filter(t => t.isFinished).length;
           if (finishedCount === 4) won = true;
@@ -311,9 +320,10 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       nextState.players = tokensUpdated;
       nextState = addEvent(nextState, 'finish', `Token reached home!`);
 
-      if (won) {
+      const winnerPlayer = nextState.players[nextState.activePlayerIndex];
+      if (won && winnerPlayer) {
         nextState.phase = 'game-over';
-        nextState.winner = nextState.players[nextState.activePlayerIndex];
+        nextState.winner = winnerPlayer;
       }
       return nextState;
     }
@@ -332,13 +342,13 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 
     case 'END_TURN': {
       let nextIndex = state.activePlayerIndex;
-      let nextPlayer;
+      let nextPlayer: Player | undefined;
       let iterations = 0;
       do {
         nextIndex = (nextIndex + 1) % state.players.length;
         nextPlayer = state.players[nextIndex];
         iterations++;
-      } while (nextPlayer.tokens.every(t => t.isFinished) && iterations < state.players.length);
+      } while (nextPlayer && nextPlayer.tokens.every(t => t.isFinished) && iterations < state.players.length);
 
       return {
         ...state,
@@ -362,6 +372,10 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
     case 'TIMER_EXPIRED': {
       // Logic for timer expired
       return { ...state, phase: 'idle' }; // Trigger end turn via effect
+    }
+
+    case 'RESTORE_GAME': {
+      return action.payload;
     }
 
     default:

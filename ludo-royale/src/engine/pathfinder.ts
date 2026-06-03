@@ -112,17 +112,17 @@ export const getPixelPosition = (position: TokenPosition, boardCells: BoardCell[
 
   if (position.type === 'base') {
     const base = HOME_BASES[color];
-    const offset = HOME_BASE_TOKEN_POSITIONS[tokenIndex];
-    row = base.row + offset[0];
-    col = base.col + offset[1];
+    const offset = HOME_BASE_TOKEN_POSITIONS[tokenIndex] || [0, 0];
+    row = base.row + offset[0]!;
+    col = base.col + offset[1]!;
   } else if (position.type === 'board') {
-    const coords = OUTER_TRACK[position.cellIndex];
-    row = coords[0];
-    col = coords[1];
+    const coords = OUTER_TRACK[position.cellIndex] || [0, 0];
+    row = coords[0]!;
+    col = coords[1]!;
   } else if (position.type === 'homeRun') {
-    const coords = HOME_RUN_TRACKS[color][position.step - 1];
-    row = coords[0];
-    col = coords[1];
+    const coords = (HOME_RUN_TRACKS[color] && HOME_RUN_TRACKS[color][position.step - 1]) || [0, 0];
+    row = coords[0]!;
+    col = coords[1]!;
   } else if (position.type === 'finished') {
     // Center of the board roughly
     return { x: CANVAS_SIZE / 2, y: CANVAS_SIZE / 2 };

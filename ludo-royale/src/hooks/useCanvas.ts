@@ -1,7 +1,7 @@
 import { useEffect, useState, RefObject } from 'react';
 import { CANVAS_SIZE } from '../engine/constants';
 
-export const useCanvas = (canvasRef: RefObject<HTMLCanvasElement>) => {
+export const useCanvas = (canvasRef: RefObject<HTMLCanvasElement | null>) => {
   const [ctx, setCtx] = useState<CanvasRenderingContext2D | null>(null);
 
   useEffect(() => {

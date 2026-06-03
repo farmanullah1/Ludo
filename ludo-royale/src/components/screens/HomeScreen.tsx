@@ -7,9 +7,11 @@ interface HomeScreenProps {
   onSettings: () => void;
   onHowToPlay: () => void;
   onTraining: () => void;
+  onResume?: () => void;
+  hasSavedGame?: boolean;
 }
 
-export const HomeScreen: React.FC<HomeScreenProps> = ({ onPlay, onSettings, onHowToPlay, onTraining }) => {
+export const HomeScreen: React.FC<HomeScreenProps> = ({ onPlay, onSettings, onHowToPlay, onTraining, onResume, hasSavedGame }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
@@ -27,7 +29,7 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onPlay, onSettings, onHo
       vx: (Math.random() - 0.5) * 0.5,
       vy: (Math.random() - 0.5) * 0.5,
       radius: Math.random() * 2 + 1,
-      color: ['#f9d976', '#ef4444', '#3b82f6', '#10b981'][Math.floor(Math.random() * 4)]
+      color: ['#f9d976', '#ef4444', '#3b82f6', '#10b981'][Math.floor(Math.random() * 4)] || '#f9d976'
     }));
 
     let animationId: number;
@@ -95,6 +97,17 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onPlay, onSettings, onHo
           transition={{ delay: 0.5, duration: 0.8 }}
           className="flex flex-col gap-4 w-72"
         >
+          {hasSavedGame && onResume && (
+            <motion.button 
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onResume}
+              className="w-full py-4 bg-amber-500 text-obsidian-950 font-bold font-cinzel text-xl rounded-full shadow-gem-glow hover:bg-amber-400 flex items-center justify-center gap-2 border border-gold-400 animate-pulse"
+            >
+              <Trophy size={24} /> RESUME GAME
+            </motion.button>
+          )}
+
           <motion.button 
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}

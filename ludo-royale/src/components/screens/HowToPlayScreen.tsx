@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion } from 'framer-motion';
 
-import { Trophy, Dices, ArrowRight, Swords, Shield, Sparkles, ChevronLeft } from 'lucide-react';
+import { Trophy, Dices, ArrowRight, Swords, Shield, Sparkles, ChevronLeft, Star } from 'lucide-react';
 
 interface HowToPlayScreenProps {
   onBack: () => void;

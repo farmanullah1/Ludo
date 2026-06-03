@@ -199,7 +199,7 @@ export class AudioEngine {
     const playChord = () => {
       if (!this.isMusicPlaying) return;
       
-      const freqs = chords[chordIndex];
+      const freqs = chords[chordIndex] || [261.63, 329.63, 392.00];
       chordIndex = (chordIndex + 1) % chords.length;
 
       freqs.forEach(freq => {

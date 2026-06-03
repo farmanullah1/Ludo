@@ -5,7 +5,7 @@ export const useDice = (settings: GameSettings) => {
   const [isRolling, setIsRolling] = useState(false);
   const [currentValue, setCurrentValue] = useState(1);
   const [animationProgress, setAnimationProgress] = useState(0);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | null>(null);
 
   const roll = useCallback((onComplete: (val: number) => void) => {
     if (isRolling) return;

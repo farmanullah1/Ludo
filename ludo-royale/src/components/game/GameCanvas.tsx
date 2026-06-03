@@ -23,11 +23,14 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ gameState, dispatch }) =
     if (gameState.phase !== 'selecting-token' || !canvasRef.current) return;
     
     const rect = canvasRef.current.getBoundingClientRect();
-    let clientX, clientY;
+    let clientX = 0;
+    let clientY = 0;
     
     if ('touches' in e) {
-      clientX = e.touches[0].clientX;
-      clientY = e.touches[0].clientY;
+      const touch = e.touches[0];
+      if (!touch) return;
+      clientX = touch.clientX;
+      clientY = touch.clientY;
     } else {
       clientX = e.clientX;
       clientY = e.clientY;
@@ -57,11 +60,13 @@ export const GameCanvas: React.FC<GameCanvasProps> = ({ gameState, dispatch }) =
       // Auto-trigger move for now since we want the game to progress
       const t = allTokens.find(token => token.id === clickedTokenId);
       if (t) {
-        const path = getTokenPath(t, gameState.dice.values[0], []);
-        if (path.length > 0) {
+        const diceVal = gameState.dice.values[0] || 1;
+        const path = getTokenPath(t, diceVal, []);
+        const targetPos = path[path.length - 1];
+        if (targetPos) {
           dispatch({
             type: 'MOVE_TOKEN',
-            payload: { tokenId: clickedTokenId, targetPosition: path[path.length - 1] }
+            payload: { tokenId: clickedTokenId, targetPosition: targetPos }
           });
         }
       }

@@ -7,13 +7,13 @@ import { renderTokens } from '../renderers/tokenRenderer';
 import { getPixelPosition, getTokenPath } from '../engine/pathfinder';
 
 export const useAnimations = (
-  canvasRef: React.RefObject<HTMLCanvasElement>,
+  canvasRef: React.RefObject<HTMLCanvasElement | null>,
   ctx: CanvasRenderingContext2D | null,
   gameState: GameState,
   dispatch: React.Dispatch<GameAction>
 ) => {
   const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const rafRef = useRef<number>();
+  const rafRef = useRef<number | null>(null);
 
   // Pre-render board
   useEffect(() => {

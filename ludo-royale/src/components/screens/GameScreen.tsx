@@ -1,4 +1,6 @@
 import React, { useEffect, useReducer, useCallback } from 'react';
+import { motion } from 'framer-motion';
+import { Trophy } from 'lucide-react';
 import { GameSettings, GameState } from '../../engine/types';
 import { gameReducer, INITIAL_STATE } from '../../engine/gameReducer';
 import { GameCanvas } from '../game/GameCanvas';
@@ -10,21 +12,38 @@ import { useDice } from '../../hooks/useDice';
 import { useSound } from '../../hooks/useSound';
 import { getAIMove } from '../../engine/ai';
 import { getTokenPath } from '../../engine/pathfinder';
+import { TOKEN_COLORS } from '../../engine/constants';
+import { renderIcon } from '../../utils/iconUtils';
+import { saveGameState, clearGameState } from '../../utils/storageUtils';
 
 interface GameScreenProps {
   settings: GameSettings;
   onExit: () => void;
+  restoredState?: GameState | null;
 }
 
-export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit }) => {
+export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit, restoredState }) => {
   const [gameState, dispatch] = useReducer(gameReducer, INITIAL_STATE);
   const { roll, isRolling, currentValue, animationProgress } = useDice(settings);
   const sound = useSound(settings);
 
   // Initialize game on mount
   useEffect(() => {
-    dispatch({ type: 'INITIALIZE_GAME', payload: settings });
-  }, [settings]);
+    if (restoredState) {
+      dispatch({ type: 'RESTORE_GAME', payload: restoredState });
+    } else {
+      dispatch({ type: 'INITIALIZE_GAME', payload: settings });
+    }
+  }, [settings, restoredState]);
+
+  // Persist game state on change
+  useEffect(() => {
+    if (gameState.players.length > 0 && gameState.phase !== 'idle' && gameState.phase !== 'game-over') {
+      saveGameState(gameState);
+    } else if (gameState.phase === 'game-over') {
+      clearGameState();
+    }
+  }, [gameState]);
 
   const activePlayer = gameState.players?.[gameState.activePlayerIndex];
 
@@ -77,7 +96,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit }) => {
     }
   }, [gameState.phase, activePlayer, handleRoll, isRolling, gameState.dice.values, gameState.movableTokenIds, gameState.players.length]);
 
-  if (gameState.players.length === 0) return (
+  if (gameState.players.length === 0 || !activePlayer) return (
     <div className="w-screen h-screen bg-obsidian-950 flex items-center justify-center">
       <div className="text-gold-400 font-cinzel text-2xl animate-pulse">Initializing Royale...</div>
     </div>

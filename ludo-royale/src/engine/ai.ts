@@ -16,6 +16,7 @@ const evaluateMove = (tokenId: string, player: Player, gameState: GameState, dif
   if (path.length === 0) return 0;
 
   const dest = path[path.length - 1];
+  if (!dest) return 0;
   let score = 0;
 
   // Medium Logic
@@ -73,7 +74,7 @@ const evaluateMove = (tokenId: string, player: Player, gameState: GameState, dif
 
 export const getAIMove = (player: Player, gameState: GameState, difficulty: PlayerType): string | null => {
   if (gameState.movableTokenIds.length === 0) return null;
-  if (gameState.movableTokenIds.length === 1) return gameState.movableTokenIds[0];
+  if (gameState.movableTokenIds.length === 1) return gameState.movableTokenIds[0] || null;
 
   let bestToken: string | null = null;
   let bestScore = -Infinity;
@@ -86,5 +87,5 @@ export const getAIMove = (player: Player, gameState: GameState, difficulty: Play
     }
   });
 
-  return bestToken || gameState.movableTokenIds[0];
+  return bestToken || gameState.movableTokenIds[0] || null;
 };
