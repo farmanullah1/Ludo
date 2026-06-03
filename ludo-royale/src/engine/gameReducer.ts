@@ -37,6 +37,33 @@ const addEvent = (state: GameState, type: GameEvent['type'], description: string
   };
 };
 
+export const INITIAL_STATE: GameState = {
+  phase: 'idle',
+  players: [],
+  activePlayerIndex: 0,
+  dice: { values: [1], rolling: false, rollCount: 0, usedValues: [], canRoll: false },
+  animations: [],
+  winner: null,
+  turnNumber: 1,
+  eventLog: [],
+  settings: {
+    mode: '4-player',
+    players: [],
+    turnTimeLimit: null,
+    soundEnabled: true,
+    musicEnabled: true,
+    animationSpeed: 'normal',
+    showMovableHints: true,
+    blockadeRules: 'standard',
+    extraDiceRolls: true,
+    safeZoneProtection: true
+  },
+  boardCells: [],
+  selectedTokenId: null,
+  movableTokenIds: [],
+  captureEffect: null
+};
+
 export const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'INITIALIZE_GAME': {

@@ -31,7 +31,7 @@ export const HowToPlayScreen: React.FC<HowToPlayScreenProps> = ({ onBack }) => {
     },
     {
       title: 'Safe Zones',
-      description: 'Cells with a ⭐ are safe zones. Tokens on these cells cannot be captured.',
+      description: 'Cells with a special star mark are safe zones. Tokens on these cells cannot be captured.',
       icon: <Shield className="text-gold-500" size={40} />
     },
     {

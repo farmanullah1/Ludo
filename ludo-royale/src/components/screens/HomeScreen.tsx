@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { Trophy, Settings, HelpCircle, GraduationCap } from 'lucide-react';
+import { Trophy, Settings, HelpCircle, GraduationCap, Crown } from 'lucide-react';
 
 interface HomeScreenProps {
   onPlay: () => void;
@@ -135,8 +135,8 @@ export const HomeScreen: React.FC<HomeScreenProps> = ({ onPlay, onSettings, onHo
         </motion.div>
       </div>
 
-      <div className="absolute bottom-4 text-gray-500 text-sm font-crimson italic">
-        v1.1.0 • Made with 👑
+      <div className="absolute bottom-4 text-gray-500 text-sm font-crimson italic flex items-center gap-1">
+        v1.1.0 • Made with <Crown size={14} className="text-gold-600" /> by Farman Ullah
       </div>
     </div>
   );

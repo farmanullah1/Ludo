@@ -1,6 +1,6 @@
 import React, { useEffect, useReducer, useCallback } from 'react';
 import { GameSettings, GameState } from '../../engine/types';
-import { gameReducer } from '../../engine/gameReducer';
+import { gameReducer, INITIAL_STATE } from '../../engine/gameReducer';
 import { GameCanvas } from '../game/GameCanvas';
 import { PlayerPanel } from '../game/PlayerPanel';
 import { DicePanel } from '../game/DicePanel';
@@ -17,7 +17,7 @@ interface GameScreenProps {
 }
 
 export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit }) => {
-  const [gameState, dispatch] = useReducer(gameReducer, {} as GameState); // Will initialize immediately
+  const [gameState, dispatch] = useReducer(gameReducer, INITIAL_STATE);
   const { roll, isRolling, currentValue, animationProgress } = useDice(settings);
   const sound = useSound(settings);
 
@@ -40,25 +40,27 @@ export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit }) => {
 
   // AI loop
   useEffect(() => {
-    if (gameState.phase === 'rolling' && activePlayer?.type !== 'human' && !isRolling) {
+    if (!activePlayer || gameState.players.length === 0) return;
+
+    if (gameState.phase === 'rolling' && activePlayer.type !== 'human' && !isRolling) {
       const timer = setTimeout(() => {
         handleRoll();
       }, 1000);
       return () => clearTimeout(timer);
     }
 
-    if (gameState.phase === 'selecting-token' && activePlayer?.type !== 'human') {
+    if (gameState.phase === 'selecting-token' && activePlayer.type !== 'human') {
       const timer = setTimeout(() => {
         const tokenId = getAIMove(activePlayer, gameState, activePlayer.type);
         if (tokenId) {
           dispatch({ type: 'SELECT_TOKEN', payload: { tokenId } });
           const token = activePlayer.tokens.find(t => t.id === tokenId);
           if (token) {
-            const path = getTokenPath(token, gameState.dice.values[0], []);
+            const path = getTokenPath(token, gameState.dice.values[0] || 1, []);
             if (path.length > 0) {
               dispatch({ 
                 type: 'MOVE_TOKEN', 
-                payload: { tokenId, targetPosition: path[path.length - 1] } 
+                payload: { tokenId, targetPosition: path[path.length - 1]! } 
               });
             }
           }
@@ -70,12 +72,16 @@ export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit }) => {
     }
     
     // Auto-advance if no moves or phase is idle
-    if (gameState.phase === 'idle') {
+    if (gameState.phase === 'idle' && gameState.players.length > 0) {
       dispatch({ type: 'END_TURN' });
     }
-  }, [gameState.phase, activePlayer, handleRoll, isRolling, gameState.dice.values, gameState.movableTokenIds]);
+  }, [gameState.phase, activePlayer, handleRoll, isRolling, gameState.dice.values, gameState.movableTokenIds, gameState.players.length]);
 
-  if (!gameState.players) return <div>Loading...</div>;
+  if (gameState.players.length === 0) return (
+    <div className="w-screen h-screen bg-obsidian-950 flex items-center justify-center">
+      <div className="text-gold-400 font-cinzel text-2xl animate-pulse">Initializing Royale...</div>
+    </div>
+  );
 
   return (
     <div className="w-screen min-h-screen bg-obsidian-950 flex flex-col p-4 overflow-hidden">
