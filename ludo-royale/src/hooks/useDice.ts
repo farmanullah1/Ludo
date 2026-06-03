@@ -26,6 +26,7 @@ export const useDice = (settings: GameSettings) => {
         animationRef.current = requestAnimationFrame(animate);
       } else {
         setIsRolling(false);
+        setAnimationProgress(0);
         const finalValue = Math.floor(Math.random() * 6) + 1;
         setCurrentValue(finalValue);
         onComplete(finalValue);
