@@ -19,7 +19,8 @@ export type GameAction =
   | { type: 'RESET_GAME' }
   | { type: 'UNDO_MOVE' }
   | { type: 'PAUSE_GAME' }
-  | { type: 'RESUME_GAME' };
+  | { type: 'RESUME_GAME' }
+  | { type: 'CLEAR_CAPTURE_EFFECT' };
 
 const addEvent = (state: GameState, type: GameEvent['type'], description: string, playerColor?: PlayerColor): GameState => {
   const color = playerColor || state.players[state.activePlayerIndex]?.color || 'red';
@@ -244,14 +245,27 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         startTime: Date.now()
       };
 
+      let nextCaptureEffect: import('./types').CaptureEffect | null = null;
+      if (hasCaptured) {
+        const pt = getPixelPosition(targetPosition, [], 0, activePlayer.color);
+        nextCaptureEffect = {
+          position: pt,
+          color: activePlayer.color,
+          startTime: Date.now()
+        };
+      }
+
       let nextState: GameState = {
         ...state,
         players: nextPlayers,
         animations: [...state.animations, moveAnim],
         selectedTokenId: null,
-        movableTokenIds: []
+        movableTokenIds: [],
+        captureEffect: nextCaptureEffect
       };
 
+      const isEntering = movingToken?.position.type === 'base' && targetPosition.type === 'board';
+      if (isEntering) nextState = addEvent(nextState, 'enter', `${activePlayer.name} brought a token onto the board!`);
       if (hasCaptured) nextState = addEvent(nextState, 'capture', `Captured an enemy! Extra roll!`);
       if (hasFinished) nextState = addEvent(nextState, 'finish', `Token finished! Extra roll!`);
 
@@ -377,6 +391,43 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 
     case 'RESTORE_GAME': {
       return action.payload;
+    }
+
+    case 'CLEAR_CAPTURE_EFFECT': {
+      return {
+        ...state,
+        captureEffect: null
+      };
+    }
+
+    case 'RESET_GAME': {
+      const resetPlayers = state.players.map(p => ({
+        ...p,
+        stats: { tokensFinished: 0, tokensCapured: 0, doublesRolled: 0, turnsPlayed: 0, totalMovesMade: 0 },
+        tokens: p.tokens.map((t, idx) => ({
+          ...t,
+          position: { type: 'base' } as TokenPosition,
+          isHome: true,
+          isFinished: false,
+          stepCount: 0,
+          animating: false
+        }))
+      }));
+
+      return {
+        ...state,
+        phase: 'rolling',
+        players: resetPlayers,
+        activePlayerIndex: 0,
+        dice: { values: [1], rolling: false, rollCount: 0, usedValues: [], canRoll: true },
+        animations: [],
+        winner: null,
+        turnNumber: 1,
+        eventLog: [],
+        selectedTokenId: null,
+        movableTokenIds: [],
+        captureEffect: null
+      };
     }
 
     default:

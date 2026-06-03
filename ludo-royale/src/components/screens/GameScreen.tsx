@@ -1,4 +1,4 @@
-import React, { useEffect, useReducer, useCallback } from 'react';
+import React, { useEffect, useReducer, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Trophy } from 'lucide-react';
 import { GameSettings, GameState } from '../../engine/types';
@@ -124,6 +124,39 @@ export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit, restor
     }
   }, [gameState.phase]);
 
+  // Trigger sound effects based on game events
+  const lastEventIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    const latestEvent = gameState.eventLog[0];
+    if (latestEvent && latestEvent.id !== lastEventIdRef.current) {
+      lastEventIdRef.current = latestEvent.id;
+      
+      switch (latestEvent.type) {
+        case 'capture':
+          sound.playCapture();
+          break;
+        case 'enter':
+          sound.playTokenEnter();
+          break;
+        case 'finish':
+          sound.playTokenFinish();
+          break;
+        default:
+          break;
+      }
+    }
+  }, [gameState.eventLog, sound]);
+
+  // Trigger sound effect when token movement animation starts
+  const prevMoveAnimsCountRef = useRef(0);
+  useEffect(() => {
+    const currentMoveAnims = gameState.animations.filter(a => a.type === 'move');
+    if (currentMoveAnims.length > prevMoveAnimsCountRef.current) {
+      sound.playTokenMove();
+    }
+    prevMoveAnimsCountRef.current = currentMoveAnims.length;
+  }, [gameState.animations, sound]);
+
   if (gameState.players.length === 0 || !activePlayer) return (
     <div className="w-screen h-screen bg-obsidian-950 flex items-center justify-center">
       <div className="text-gold-400 font-cinzel text-2xl animate-pulse">Initializing Royale...</div>
@@ -232,7 +265,7 @@ export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit, restor
               <motion.button 
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
-                onClick={onExit} 
+                onClick={() => dispatch({ type: 'RESET_GAME' })} 
                 className="w-full py-4 bg-gold-gradient text-obsidian-950 font-bold rounded-xl font-cinzel text-xl shadow-lg"
               >
                 PLAY AGAIN

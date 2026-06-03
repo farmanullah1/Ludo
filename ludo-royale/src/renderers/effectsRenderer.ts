@@ -64,7 +64,7 @@ export const renderCaptureEffect = (
   effect: CaptureEffect, 
   timestamp: number
 ): void => {
-  const elapsed = timestamp - effect.startTime;
+  const elapsed = Date.now() - effect.startTime;
   if (elapsed > 500) return; // Finished
 
   const progress = elapsed / 500;

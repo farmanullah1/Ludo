@@ -64,7 +64,12 @@ export const useAnimations = (
       });
 
       if (gameState.captureEffect) {
-        renderCaptureEffect(ctx, gameState.captureEffect, timestamp);
+        const elapsed = Date.now() - gameState.captureEffect.startTime;
+        if (elapsed >= 500) {
+          dispatch({ type: 'CLEAR_CAPTURE_EFFECT' });
+        } else {
+          renderCaptureEffect(ctx, gameState.captureEffect, timestamp);
+        }
       }
 
       rafRef.current = requestAnimationFrame(renderLoop);
