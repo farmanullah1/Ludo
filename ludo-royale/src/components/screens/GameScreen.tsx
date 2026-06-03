@@ -181,23 +181,33 @@ export const GameScreen: React.FC<GameScreenProps> = ({ settings, onExit, restor
       </div>
 
       {/* Main Layout */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-6 items-center justify-center">
+      <div className="flex-grow flex flex-col lg:flex-row gap-4 lg:gap-6 items-center justify-center p-2 lg:p-4 overflow-y-auto lg:overflow-hidden">
         
-        {/* Left Panels */}
-        <div className="flex flex-row lg:flex-col gap-4 w-full lg:w-auto overflow-x-auto lg:overflow-visible p-2">
+        {/* Left Panels (Desktop Only) */}
+        <div className="hidden lg:flex lg:flex-col gap-4 w-auto p-2">
           {gameState.players.slice(0, 2).map((p, i) => (
             <PlayerPanel key={p.id} player={p} isActive={gameState.activePlayerIndex === i} />
           ))}
         </div>
 
-        {/* Center Canvas */}
-        <div className="flex-shrink-0 w-full max-w-[750px] relative">
-          <GameCanvas gameState={gameState} dispatch={dispatch} />
+        {/* Center Container (Canvas and Mobile Players Row) */}
+        <div className="flex flex-col items-center justify-center w-full max-w-[750px]">
+          {/* Mobile Players Row (compact) - Hidden on Desktop */}
+          <div className="flex lg:hidden justify-center gap-2 w-full overflow-x-auto py-1 mb-2 px-1 scrollbar-none">
+            {gameState.players.map((p, i) => (
+              <PlayerPanel key={p.id} player={p} isActive={gameState.activePlayerIndex === i} compact={true} />
+            ))}
+          </div>
+
+          <div className="w-full relative">
+            <GameCanvas gameState={gameState} dispatch={dispatch} />
+          </div>
         </div>
 
         {/* Right Panels & Controls */}
-        <div className="flex flex-col gap-4 w-full lg:w-auto max-w-sm">
-          <div className="flex flex-row lg:flex-col gap-4 overflow-x-auto lg:overflow-visible">
+        <div className="flex flex-col md:flex-row lg:flex-col gap-4 w-full lg:w-auto max-w-[750px] lg:max-w-sm items-center lg:items-stretch justify-center">
+          {/* Right Player Panels (Desktop Only) */}
+          <div className="hidden lg:flex lg:flex-col gap-4 w-auto">
             {gameState.players.slice(2, 4).map((p, i) => (
               <PlayerPanel key={p.id} player={p} isActive={gameState.activePlayerIndex === i + 2} />
             ))}
