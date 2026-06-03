@@ -1,0 +1,8 @@
+ludo-royale/node_modules
+ludo-royale/dist
+ludo-royale/dist-ssr
+ludo-royale/*.local
+.DS_Store
+*.log
+node_modules/
+dist/
