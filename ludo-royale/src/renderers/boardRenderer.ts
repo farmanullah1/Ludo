@@ -123,11 +123,23 @@ export const renderBoard = (ctx: CanvasRenderingContext2D, boardCells: BoardCell
     if (SAFE_CELLS.includes(index)) {
       ctx.fillStyle = BOARD_BG.safeCell;
       ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+      
+      // Draw a custom star instead of text emoji
+      const cx = x + CELL_SIZE/2;
+      const cy = y + CELL_SIZE/2;
+      const spikes = 5;
+      const outerRadius = CELL_SIZE * 0.3;
+      const innerRadius = CELL_SIZE * 0.15;
+      
+      ctx.beginPath();
       ctx.fillStyle = 'white';
-      ctx.font = '20px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('⭐', x + CELL_SIZE/2, y + CELL_SIZE/2);
+      for (let i = 0; i < spikes * 2; i++) {
+        const radius = i % 2 === 0 ? outerRadius : innerRadius;
+        const angle = (Math.PI / spikes) * i - Math.PI / 2;
+        ctx.lineTo(cx + Math.cos(angle) * radius, cy + Math.sin(angle) * radius);
+      }
+      ctx.closePath();
+      ctx.fill();
     }
 
     // Start cells
